@@ -11,6 +11,9 @@ from db.PaymentIntent import save_payment_intent
 from db.Charge import save_charge
 from db.Customer import save_customer, update_telegram_from_checkout_session, get_customer
 from db.Subscription import save_subscription, get_subscription
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger.info('Started webhook service')
 
@@ -70,7 +73,10 @@ async def webhook_handler(request: Request):
         return JSONResponse({"error": "Missing Stripe‑Signature header"}, status_code=400)
 
     try:
-        event = stripe.Event.construct_from(json.loads(payload), sig_header)
+        event = stripe.Event.construct_from(
+            json.loads(payload),
+            sig_header,
+            STRIPE_WEBHOOK_SECRET)
     except stripe.error.SignatureVerificationError as e:
         logger.error(e)
         return JSONResponse({"error": "Invalid signature"}, status_code=400)
