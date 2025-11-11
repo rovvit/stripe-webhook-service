@@ -40,7 +40,7 @@ async def health():
     return {"status": "ok"}
 
 
-@app.get('/api/check_subcription/')
+@app.get("/api/check_subscription/")
 async def check_payment_by(telegram_tag: str = None, email: str = None):
     filters = {k: v for k, v in {
         "telegram_tag": telegram_tag,
