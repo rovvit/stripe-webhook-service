@@ -42,6 +42,9 @@ async def update_telegram_from_checkout_session(event):
     for field in custom_fields:
         if field.get("key") == "telegram":
             telegram_tag = field.get("text", {}).get("value")
+            if isinstance(telegram_tag, str):
+                telegram_tag = telegram_tag.strip().lstrip("@")
+
     try:
         existing = await Customer.get_or_none(id=customer_id)
         if telegram_tag:
