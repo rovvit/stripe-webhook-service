@@ -3,3 +3,7 @@ stripe>=10.0.0
 fastapi>=0.119.0
 starlette>=0.48.0
 python-dotenv>=1.0.1
+uvicorn>=0.38.0
+tortoise-orm>=0.25.1
+aerich>=0.9.1
+

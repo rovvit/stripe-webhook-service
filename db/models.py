@@ -54,7 +54,7 @@ class Customer(models.Model):
     telegram_chat_id = fields.IntField(default=None, null=True)
     description = fields.CharField(max_length=128, default=None, null=True)
 
-    created_at = fields.DatetimeField()
+    created_at = fields.DatetimeField(auto_now=False, default=datetime(1970, 1, 1, tzinfo=timezone.utc))
     updated = fields.DatetimeField(auto_now=False, default=datetime(1970, 1, 1, tzinfo=timezone.utc))
 
     class Meta:
