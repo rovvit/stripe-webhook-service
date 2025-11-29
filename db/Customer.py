@@ -50,16 +50,20 @@ async def update_telegram_from_checkout_session(event):
         if telegram_tag:
             if not existing:
                 await Customer.update_or_create(
+                    defaults={
+                        "telegram_tag": telegram_tag,
+                        "updated": datetime.fromtimestamp(event.get("created")),
+                    },
                     id=customer_id,
-                    telegram_tag=telegram_tag,
-                    updated=datetime.fromtimestamp(event.get("created")),
                 )
             else:
                 await existing.update_or_create(
+                    defaults={
+                        "telegram_tag": telegram_tag,
+                        "created_at": datetime(1970, 1, 1, tzinfo=timezone.utc),
+                        "updated": datetime.fromtimestamp(event.get("created")),
+                    },
                     id=customer_id,
-                    telegram_tag=telegram_tag,
-                    created_at=datetime(1970, 1, 1, tzinfo=timezone.utc),
-                    updated=datetime.fromtimestamp(event.get("created")),
                 )
         else:
             logger.error(f"Telegram tag not found in request body, updating customer {customer_id} skipped")
