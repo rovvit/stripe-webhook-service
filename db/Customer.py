@@ -40,10 +40,15 @@ async def update_telegram_from_checkout_session(event):
     logger.info(f"[INFO] Starting saving telegram tag for customer_id={customer_id}")
 
     for field in custom_fields:
-        if field.get("key") == "telegram":
-            telegram_tag = field.get("text", {}).get("value")
-            if isinstance(telegram_tag, str):
-                telegram_tag = telegram_tag.strip().lstrip("@")
+        key = field.get("key")
+        if isinstance(key, str) and "telegram" in key.lower():
+            text = field.get("text", {})
+            tag = text.get("value")
+
+            if isinstance(tag, str):
+                telegram_tag = tag.strip().lstrip("@")
+            else:
+                telegram_tag = None
 
     try:
         existing = await Customer.get_or_none(id=customer_id)
