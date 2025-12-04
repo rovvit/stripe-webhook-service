@@ -46,9 +46,28 @@ async def update_telegram_from_checkout_session(event):
             tag = text.get("value")
 
             if isinstance(tag, str):
-                telegram_tag = tag.strip().lstrip("@")
-            else:
-                telegram_tag = None
+                normalized = tag.strip()
+
+                if normalized.startswith("@"):
+                    normalized = normalized[1:]
+
+                prefixes = [
+                    "https://t.me/",
+                    "http://t.me/",
+                    "t.me/",
+                    "https://telegram.me/",
+                    "http://telegram.me/",
+                    "telegram.me/",
+                ]
+
+                for p in prefixes:
+                    if normalized.startswith(p):
+                        normalized = normalized[len(p):]
+                        break
+
+                normalized = normalized.strip("/")
+
+                telegram_tag = normalized or None
 
     try:
         existing = await Customer.get_or_none(id=customer_id)
