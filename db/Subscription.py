@@ -46,7 +46,14 @@ async def save_subscription(event):
     except Exception as e:
         logger.error(f"[ERROR] [SUBSCRIPTION] {e}")
 
+
 async def get_subscription(filters: dict):
-    subscription = await Subscription.filter(**filters).order_by('-updated').first()
     logger.info(f"[GET SUBSCRIPTION] Looking for subscription {filters}")
+
+    subscription = await Subscription.filter(**filters).order_by('-updated').first()
+
+    if subscription is None:
+        logger.info("[GET SUBSCRIPTION] No subscription found")
+        return False
+
     return subscription.status
