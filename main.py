@@ -52,14 +52,19 @@ async def check_payment_by(telegram_tag: str = None, email: str = None):
 
     logger.info(f"[CHECK SUBSCRIPTION] Looking for payment by {filters.keys()}...")
 
-    customer_id = await get_customer(**filters)
-    if not customer_id:
+    customer_ids = await get_customer(**filters)
+    if not customer_ids:
         logger.info(f"[CHECK SUBSCRIPTION] No customer found {filters.keys()} {filters.values()}")
         return JSONResponse({"message": "No customer found", "paid": False}, status_code=200)
 
-    payment_status = await get_subscription({"customer_id": customer_id})
-    logger.info(f"[CHECK SUBSCRIPTION] Found successful payment intent for {customer_id} {payment_status}")
-    return {"paid": payment_status, "message": "Found subscription for customer"}
+    for cid in customer_ids:
+        paid = await get_subscription({"customer_id": cid})
+        if paid:
+            logger.info(f"[CHECK SUBSCRIPTION] Found subscription for {cid} {paid}")
+            return {"paid": True}
+
+    logger.info(f"[CHECK SUBSCRIPTION] Not found subscription for {customer_ids}")
+    return {"paid": False, "message": "Not found subscription for customer"}
 
 
 @app.post("/stripe_webhook")
