@@ -80,14 +80,13 @@ async def get_customer(*, email=None, name=None, phone=None, telegram_tag=None):
     if not filters:
         logger.error("[GET CUSTOMER] No filters was given")
         return None
-    query = await Customer.get_or_none(**filters)
-    if query:
-        logger.info(f"[GET CUSTOMER] Found customer {query.id} by {filters.keys()}")
-        return query.id
+    customers = await Customer.filter(**filters).values_list("id", flat=True)
+    if customers:
+        logger.info(f"[GET CUSTOMER] Found customer {customers} by {filters.keys()}")
     else:
         logger.info(f"[GET CUSTOMER] No customer found by {filters.keys()}")
-        return None
 
+    return customers
 
 # """
 # {
