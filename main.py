@@ -80,7 +80,7 @@ async def check_payment_by(payload: SubscriptionCheckRequest):
 
     for cus in customers:
         cus.user_id = telegram_user
-        cus.save()
+        await cus.save()
 
         cid = cus.id
         subscriptions  = await get_subscriptions({"customer_id": cid})
