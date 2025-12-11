@@ -89,13 +89,13 @@ async def check_payment_by(payload: SubscriptionCheckRequest):
             if sub.status == "active":
                 telegram_user.subscription_status = True
                 telegram_user.date_end = sub.ending
-                telegram_user.save()
+                await telegram_user.save()
                 active_sub = sub
                 break
 
         if active_sub:
             logger.info(f"[CHECK SUBSCRIPTION] Found subscription for {cid} {subscriptions}")
-            return {"data": telegram_user}
+            return telegram_user
 
     logger.info(f"[CHECK SUBSCRIPTION] Subscription not found for {customers}")
     return {"subscription_status": False, "message": "Not found subscription for customer"}
