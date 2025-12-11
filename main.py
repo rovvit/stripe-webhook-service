@@ -67,7 +67,7 @@ async def check_payment_by(payload: SubscriptionCheckRequest):
     telegram_user = await get_telegram_user(**data)
     if telegram_user:
         logger.info(f"[CHECK SUBSCRIPTION] Found Telegram User! {telegram_user.user_id}")
-        return {"paid": telegram_user}
+        return telegram_user
 
     telegram_user = await create_telegram_user(**data)
 
@@ -76,7 +76,7 @@ async def check_payment_by(payload: SubscriptionCheckRequest):
 
     if not customers:
         logger.info(f"[CHECK SUBSCRIPTION] No customer found {data.keys()} {data.values()}")
-        return JSONResponse({"message": "No customer found", "paid": False}, status_code=200)
+        return JSONResponse({"message": "No customer found", "subscription_status": False}, status_code=200)
 
     for cus in customers:
         cus.user_id = telegram_user
@@ -88,18 +88,17 @@ async def check_payment_by(payload: SubscriptionCheckRequest):
         for sub in subscriptions:
             if sub.status == "active":
                 telegram_user.subscription_status = True
+                telegram_user.date_end = sub.ending
                 telegram_user.save()
                 active_sub = sub
                 break
 
         if active_sub:
             logger.info(f"[CHECK SUBSCRIPTION] Found subscription for {cid} {subscriptions}")
-
-
-            return {"paid": True}
+            return {"data": telegram_user}
 
     logger.info(f"[CHECK SUBSCRIPTION] Subscription not found for {customers}")
-    return {"paid": False, "message": "Not found subscription for customer"}
+    return {"subscription_status": False, "message": "Not found subscription for customer"}
 
 
 @app.post("/stripe_webhook")
