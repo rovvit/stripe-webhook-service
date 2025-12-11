@@ -107,7 +107,7 @@ async def get_customers(*, email=None, name=None, phone=None, username=None):
 
     customers = await Customer.filter(query)
     if customers:
-        logger.info(f"[GET CUSTOMER] Found customers {customers} by {query}")
+        logger.info(f"[GET CUSTOMER] Found customers {customers.pop()} by {query.children}")
     else:
         logger.info(f"[GET CUSTOMER] No customer found by {query}")
     return customers
