@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from utils.logger import logger
 from db.models import Customer
+from tortoise.expressions import Q
 
 async def save_customer(event):
     customer = event.get("data").get("object")
@@ -95,13 +96,18 @@ async def update_telegram_from_checkout_session(event):
         logger.error(f"[ERROR] [CUSTOMER_UPDATE_TG] {e}")
 
 async def get_customers(*, email=None, name=None, phone=None, username=None):
-    filters = {k: v for k, v in locals().items() if v is not None}
-    if not filters:
+    queries = [Q(**{k: v}) for k, v in locals().items() if v is not None]
+    if not queries:
         logger.error("[GET CUSTOMER] No filters was given")
         return None
-    customers = await Customer.filter(**filters)
+
+    query = queries.pop()
+    for q in queries:
+        query |= q
+
+    customers = await Customer.filter(query)
     if customers:
-        logger.info(f"[GET CUSTOMER] Found customers {customers} by {filters.keys()}")
+        logger.info(f"[GET CUSTOMER] Found customers {customers} by {query}")
     else:
-        logger.info(f"[GET CUSTOMER] No customer found by {filters.keys()}")
+        logger.info(f"[GET CUSTOMER] No customer found by {query}")
     return customers

@@ -50,6 +50,7 @@ class SubscriptionCheckRequest(BaseModel):
     username: Optional[str] = None
     user_id: Optional[int] = None
 
+
 @app.post("/api/check_subscription/")
 async def check_payment_by(payload: SubscriptionCheckRequest):
     data = {k: v for k, v in {
@@ -83,7 +84,7 @@ async def check_payment_by(payload: SubscriptionCheckRequest):
         await cus.save()
 
         cid = cus.id
-        subscriptions  = await get_subscriptions({"customer_id": cid})
+        subscriptions = await get_subscriptions({"customer_id": cid})
         active_sub = None
         for sub in subscriptions:
             if sub.status == "active":
