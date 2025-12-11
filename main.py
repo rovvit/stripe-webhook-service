@@ -64,7 +64,7 @@ async def check_payment_by(payload: SubscriptionCheckRequest):
 
     logger.info(f"[CHECK SUBSCRIPTION] New request with data {filters.items()}...")
 
-    telegram_user = await get_telegram_user(*payload)
+    telegram_user = await get_telegram_user(**filters)
     if telegram_user:
         logger.info(f"[CHECK SUBSCRIPTION] Found Telegram User! {telegram_user.user_id}")
         return {"paid": telegram_user}
