@@ -52,30 +52,30 @@ class SubscriptionCheckRequest(BaseModel):
 
 @app.post("/api/check_subscription/")
 async def check_payment_by(payload: SubscriptionCheckRequest):
-    filters = {k: v for k, v in {
+    data = {k: v for k, v in {
         "email": payload.email,
         "username": payload.username,
         "user_id": payload.user_id
     }.items() if v is not None}
-    logger.info(f"filters: {filters}, types: {[type(v) for v in filters.values()]}")
+    logger.info(f"filters: {data}, types: {[type(v) for v in data.values()]}")
 
-    if not filters:
+    if not data:
         return JSONResponse({"error": "Bad filters passed"}, status_code=400)
 
-    logger.info(f"[CHECK SUBSCRIPTION] New request with data {filters.items()}...")
+    logger.info(f"[CHECK SUBSCRIPTION] New request with data {data.items()}...")
 
-    telegram_user = await get_telegram_user(**filters)
+    telegram_user = await get_telegram_user(**data)
     if telegram_user:
         logger.info(f"[CHECK SUBSCRIPTION] Found Telegram User! {telegram_user.user_id}")
         return {"paid": telegram_user}
 
-    telegram_user = await create_telegram_user(**filters)
+    telegram_user = await create_telegram_user(**data)
 
     logger.info(f"[CHECK SUBSCRIPTION] Telegram User not found, searching for customer...")
-    customers = await get_customers(**filters)
+    customers = await get_customers(email=data.get('email'), username=data.get('username'))
 
     if not customers:
-        logger.info(f"[CHECK SUBSCRIPTION] No customer found {filters.keys()} {filters.values()}")
+        logger.info(f"[CHECK SUBSCRIPTION] No customer found {data.keys()} {data.values()}")
         return JSONResponse({"message": "No customer found", "paid": False}, status_code=200)
 
     for cus in customers:
