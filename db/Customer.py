@@ -97,7 +97,7 @@ async def update_telegram_from_checkout_session(event):
 
 async def get_customers(*, email=None, name=None, phone=None, username=None):
     fields = {k: v for k, v in locals().items() if v is not None}
-    queries = [Q(**{k: v}) for k, v in fields]
+    queries = [Q(**{k: v}) for k, v in fields.items()]
     if not queries:
         logger.error("[GET CUSTOMER] No filters was given")
         return None
