@@ -54,7 +54,8 @@ class SubscriptionCheckRequest(BaseModel):
 async def check_payment_by(payload: SubscriptionCheckRequest):
     filters = {k: v for k, v in {
         "email": payload.email,
-        "username": payload.username
+        "username": payload.username,
+        "user_id": payload.user_id
     }.items() if v is not None}
 
     if not filters:
@@ -62,12 +63,12 @@ async def check_payment_by(payload: SubscriptionCheckRequest):
 
     logger.info(f"[CHECK SUBSCRIPTION] New request with data {filters.items()}...")
 
-    telegram_user = await get_telegram_user(**filters)
+    telegram_user = await get_telegram_user(*payload)
     if telegram_user:
         logger.info(f"[CHECK SUBSCRIPTION] Found Telegram User! {telegram_user.user_id}")
         return {"paid": telegram_user}
 
-    telegram_user = await create_telegram_user(*payload)
+    telegram_user = await create_telegram_user(**filters)
 
     logger.info(f"[CHECK SUBSCRIPTION] Telegram User not found, searching for customer...")
     customers = await get_customers(**filters)
