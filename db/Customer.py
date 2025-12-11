@@ -96,7 +96,8 @@ async def update_telegram_from_checkout_session(event):
         logger.error(f"[ERROR] [CUSTOMER_UPDATE_TG] {e}")
 
 async def get_customers(*, email=None, name=None, phone=None, username=None):
-    queries = [Q(**{k: v}) for k, v in locals().items() if v is not None]
+    fields = {k: v for k, v in locals().items() if v is not None}
+    queries = [Q(**{k: v}) for k, v in fields]
     if not queries:
         logger.error("[GET CUSTOMER] No filters was given")
         return None
@@ -104,11 +105,6 @@ async def get_customers(*, email=None, name=None, phone=None, username=None):
     query = queries.pop()
     for q in queries:
         query |= q
-    filters_info = {}
-    for attr in ['email', 'username', 'name', 'phone']:
-        value = getattr(query, attr, None)
-        if value is not None:
-            filters_info[attr] = value
 
     customers = await Customer.filter(query)
     customers_info = [
