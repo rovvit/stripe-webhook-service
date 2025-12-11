@@ -49,7 +49,7 @@ async def create_telegram_user(
         user_id: int,
         username: Optional[str],
         email: Optional[str],
-        subscription_status: Optional[bool]
+        subscription_status: Optional[bool] = False
 ):
     telegram_user = await TelegramUser.create(*locals().items())
     return telegram_user
