@@ -55,8 +55,9 @@ async def check_payment_by(payload: SubscriptionCheckRequest):
     filters = {k: v for k, v in {
         "email": payload.email,
         "username": payload.username,
-        "user_id": int(payload.user_id)
+        "user_id": payload.user_id
     }.items() if v is not None}
+    logger.info(f"filters: {filters}, types: {[type(v) for v in filters.values()]}")
 
     if not filters:
         return JSONResponse({"error": "Bad filters passed"}, status_code=400)
