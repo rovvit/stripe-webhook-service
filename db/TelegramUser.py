@@ -46,9 +46,9 @@ async def get_telegram_user(
     return None
 
 async def create_telegram_user(
-        user_id: int,
-        username: Optional[str],
-        email: Optional[str],
+        user_id: int = None,
+        username: Optional[str] = None,
+        email: Optional[str] = None,
         subscription_status: Optional[bool] = False
 ):
     telegram_user = await TelegramUser.create(*locals().items())
