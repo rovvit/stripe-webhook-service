@@ -113,7 +113,7 @@ async def get_customers(*, email=None, name=None, phone=None, username=None):
     ]
 
     if customers:
-        logger.info(f"[GET CUSTOMER] Found customers {customers_info} by {filters_info}")
+        logger.info(f"[GET CUSTOMER] Found customers {customers_info} by {fields}")
     else:
-        logger.info(f"[GET CUSTOMER] No customer found by {filters_info}")
+        logger.info(f"[GET CUSTOMER] No customer found by {fields}")
     return customers
