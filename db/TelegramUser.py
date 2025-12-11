@@ -5,9 +5,9 @@ from db.models import TelegramUser
 from typing import Optional
 
 async def get_telegram_user(
-        email: Optional[str],
-        username: Optional[str],
-        user_id: Optional[int]):
+        email: Optional[str] = None,
+        username: Optional[str] = None,
+        user_id: Optional[int] = None):
     """
     Search for TelegramUser.
     Priority:
