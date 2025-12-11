@@ -104,10 +104,20 @@ async def get_customers(*, email=None, name=None, phone=None, username=None):
     query = queries.pop()
     for q in queries:
         query |= q
+    filters_info = {}
+    for attr in ['email', 'username', 'name', 'phone']:
+        value = getattr(query, attr, None)
+        if value is not None:
+            filters_info[attr] = value
 
     customers = await Customer.filter(query)
+    customers_info = [
+        {'id': c.id, 'email': c.email, 'username': c.username, 'phone': c.phone}
+        for c in customers
+    ]
+
     if customers:
-        logger.info(f"[GET CUSTOMER] Found customers {customers.pop()} by {query.children}")
+        logger.info(f"[GET CUSTOMER] Found customers {customers_info} by {filters_info}")
     else:
-        logger.info(f"[GET CUSTOMER] No customer found by {query}")
+        logger.info(f"[GET CUSTOMER] No customer found by {filters_info}")
     return customers
