@@ -47,13 +47,13 @@ async def save_subscription(event):
         logger.error(f"[ERROR] [SUBSCRIPTION] {e}")
 
 
-async def get_subscription(filters: dict):
-    logger.info(f"[GET SUBSCRIPTION] Looking for subscription {filters}")
+async def get_subscriptions(filters: dict):
+    logger.info(f"[GET SUBSCRIPTION] Looking for subscriptions by {filters}")
 
-    subscription = await Subscription.filter(**filters).order_by('-updated').first()
+    subscriptions = await Subscription.filter(**filters).order_by('-updated')
 
-    if subscription is None:
+    if subscriptions is None:
         logger.info("[GET SUBSCRIPTION] No subscription found")
-        return False
+        return []
 
-    return subscription.status
+    return subscriptions

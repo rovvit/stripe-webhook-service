@@ -5,13 +5,18 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from starlette.responses import JSONResponse
 from tortoise import Tortoise
+
+from db.TelegramUser import get_telegram_user, create_telegram_user
+from db.models import Customer
 from tortoise_config import TORTOISE_ORM
 from utils.logger import logger
 from db.PaymentIntent import save_payment_intent
 from db.Charge import save_charge
-from db.Customer import save_customer, update_telegram_from_checkout_session, get_customer
-from db.Subscription import save_subscription, get_subscription
+from db.Customer import save_customer, update_telegram_from_checkout_session, get_customers
+from db.Subscription import save_subscription, get_subscriptions
 from dotenv import load_dotenv
+from pydantic import BaseModel
+from typing import Optional
 
 load_dotenv()
 
@@ -40,30 +45,58 @@ async def health():
     return {"status": "ok"}
 
 
-@app.get("/api/check_subscription/")
-async def check_payment_by(telegram_tag: str = None, email: str = None):
+class SubscriptionCheckRequest(BaseModel):
+    email: Optional[str] = None
+    username: Optional[str] = None
+    user_id: Optional[int] = None
+
+@app.post("/api/check_subscription/")
+async def check_payment_by(payload: SubscriptionCheckRequest):
     filters = {k: v for k, v in {
-        "telegram_tag": telegram_tag,
-        "email": email
+        "email": payload.email,
+        "username": payload.username
     }.items() if v is not None}
 
     if not filters:
         return JSONResponse({"error": "Bad filters passed"}, status_code=400)
 
-    logger.info(f"[CHECK SUBSCRIPTION] Looking for payment by {filters.keys()}...")
+    logger.info(f"[CHECK SUBSCRIPTION] New request with data {filters.items()}...")
 
-    customer_ids = await get_customer(**filters)
-    if not customer_ids:
+    telegram_user = await get_telegram_user(**filters)
+    if telegram_user:
+        logger.info(f"[CHECK SUBSCRIPTION] Found Telegram User! {telegram_user.user_id}")
+        return {"paid": telegram_user}
+
+    telegram_user = await create_telegram_user(*payload)
+
+    logger.info(f"[CHECK SUBSCRIPTION] Telegram User not found, searching for customer...")
+    customers = await get_customers(**filters)
+
+    if not customers:
         logger.info(f"[CHECK SUBSCRIPTION] No customer found {filters.keys()} {filters.values()}")
         return JSONResponse({"message": "No customer found", "paid": False}, status_code=200)
 
-    for cid in customer_ids:
-        paid = await get_subscription({"customer_id": cid})
-        if paid:
-            logger.info(f"[CHECK SUBSCRIPTION] Found subscription for {cid} {paid}")
+    for cus in customers:
+        cus.user_id = telegram_user
+        cus.save()
+
+        cid = cus.id
+        subscriptions  = await get_subscriptions({"customer_id": cid})
+        active_sub = None
+        for sub in subscriptions:
+            if sub.status == "active":
+                telegram_user.subscription_status = True
+                telegram_user.save()
+                active_sub = sub
+                break
+
+        if active_sub:
+            logger.info(f"[CHECK SUBSCRIPTION] Found subscription for {cid} {subscriptions}")
+
+
             return {"paid": True}
 
-    logger.info(f"[CHECK SUBSCRIPTION] Not found subscription for {customer_ids}")
+    logger.info(f"[CHECK SUBSCRIPTION] Subscription not found for {customers}")
     return {"paid": False, "message": "Not found subscription for customer"}
 
 

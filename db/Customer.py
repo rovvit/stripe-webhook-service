@@ -94,56 +94,14 @@ async def update_telegram_from_checkout_session(event):
     except Exception as e:
         logger.error(f"[ERROR] [CUSTOMER_UPDATE_TG] {e}")
 
-async def get_customer(*, email=None, name=None, phone=None, telegram_tag=None):
+async def get_customers(*, email=None, name=None, phone=None, username=None):
     filters = {k: v for k, v in locals().items() if v is not None}
     if not filters:
         logger.error("[GET CUSTOMER] No filters was given")
         return None
-    customers = await Customer.filter(**filters).values_list("id", flat=True)
+    customers = await Customer.filter(**filters)
     if customers:
-        logger.info(f"[GET CUSTOMER] Found customer {customers} by {filters.keys()}")
+        logger.info(f"[GET CUSTOMER] Found customers {customers} by {filters.keys()}")
     else:
         logger.info(f"[GET CUSTOMER] No customer found by {filters.keys()}")
-
     return customers
-
-# """
-# {
-#   "created": 1762336003,
-#   "data": {
-#     "object": {
-#       "created": 1762335982,
-#       "custom_fields": [
-#         {
-#           "key": "telegram",
-#           "label": {
-#             "custom": "Telegram",
-#             "type": "custom"
-#           },
-#           "text": {
-#             "default_value": null,
-#             "maximum_length": null,
-#             "minimum_length": null,
-#             "value": "telelelel"
-#           },
-#         }
-#       ],
-#       "customer": "cus_TMmsfyGpy24Od0",
-#       "customer_details": {
-#         "email": "email@example.com",
-#         "name": "imya vvvvv",
-#         "phone": null,
-#       },
-#       "expires_at": 1762422382,
-#       "mode": "subscription",
-#       "object": "checkout.session",
-#       "payment_status": "paid",
-#       "status": "complete",
-#       "subscription": "sub_1SQ3IbC6yWgQqHtJmtoslpgE",
-#     }
-#   },
-#   "id": "evt_1SQ3IdC6yWgQqHtJHsNR42qL",
-#   "object": "event",
-#   "type": "checkout.session.completed"
-# }
-# """
