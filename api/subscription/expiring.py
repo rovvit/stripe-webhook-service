@@ -16,12 +16,13 @@ from .router import router
 @router.get("/expiring")
 async def get_expiring_subscriptions(days: int = 5):
     now = datetime.now(UTC)
-    limit_date = now + timedelta(days=days)
+    start = now + timedelta(days=days)
+    end = start + timedelta(days=1)
 
     users = await TelegramUser.filter(
-        date_end__gte=now,
-        date_end__lte=limit_date,
-        subscription_status=True  # если нужно учитывать только активные
+        date_end__gte=start,
+        date_end__lt=end,
+        subscription_status=True
     ).all()
 
     logger.info(f"[GET EXPIRING SUBS] Found subscriptions: {users} and tg users:")
