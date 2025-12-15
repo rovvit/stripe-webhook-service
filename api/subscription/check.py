@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 from utils.logger import logger
-from fastapi import HTTPException, APIRouter
+from fastapi import HTTPException
 from starlette.responses import JSONResponse
 from db.Subscription import get_subscriptions
 from db.TelegramUser import get_telegram_user, create_telegram_user
