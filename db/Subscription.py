@@ -1,14 +1,15 @@
 from datetime import datetime
 
 from utils.logger import logger
-from db.models import Subscription
+from db.models import Subscription, Customer
 
 async def save_subscription(event):
     body =event.get('data').get('object')
+    customer = await Customer.get_or_none(id=body.get('customer'))
     data = {
       "id": body.get('id'),
       "status": body.get("status"),
-      "customer_id": body.get('customer'),
+      "customer": customer,
       "started": datetime.fromtimestamp(body.get("current_period_start")),
       "ending": datetime.fromtimestamp(body.get("current_period_end")),
       "created": datetime.fromtimestamp(event.get("created")),
