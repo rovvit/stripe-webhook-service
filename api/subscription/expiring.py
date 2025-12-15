@@ -18,19 +18,15 @@ async def get_expiring_subscriptions(days: int = 5):
     now = datetime.now(UTC)
     limit_date = now + timedelta(days=days)
 
-    subscriptions = await Subscription.filter(
-        ending__gte=now,
-        ending__lte=limit_date,
-        status="active",
-    ).select_related("customer", "customer__user_id")
+    users = await TelegramUser.filter(
+        date_end__gte=now,
+        date_end__lte=limit_date,
+        subscription_status=True  # если нужно учитывать только активные
+    ).all()
 
-    telegram_users = await TelegramUser.filter(
-        customer__subscription__ending__gte=now,
-        customer__subscription__ending__lte=limit_date,
-        customer__subscription__status="active",
-    ).distinct()
+    logger.info(f"[GET EXPIRING SUBS] Found subscriptions: {users} and tg users:")
 
-    logger.info(f"[GET EXPIRING SUBS] Found subscriptions: {subscriptions} and tg users: {telegram_users}")
+    return 0
 
 
 
