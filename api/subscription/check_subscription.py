@@ -7,18 +7,14 @@ from starlette.responses import JSONResponse
 from db.Subscription import get_subscriptions
 from db.TelegramUser import get_telegram_user, create_telegram_user
 from db.Customer import get_customers
-
-router = APIRouter(
-    prefix="/check_subscription",
-    tags=["Subscription"],
-)
+from .router import router
 
 class SubscriptionCheckRequest(BaseModel):
     email: Optional[str] = None
     username: Optional[str] = None
     user_id: Optional[int] = None
 
-@router.post("")
+@router.post("/check")
 async def check_subscription(payload: SubscriptionCheckRequest):
     try:
         data = {k: v for k, v in {

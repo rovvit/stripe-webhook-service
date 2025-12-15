@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from tortoise import Tortoise
 from tortoise_config import TORTOISE_ORM
 from utils.logger import logger
-from api.subscription.check_subscription import router as sub_router
+from api.subscription import router as sub_router
 from api.webhook.stripe_webhook import router as webhook_router
 
 logger.info('Started webhook service')
