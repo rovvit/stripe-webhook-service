@@ -1,7 +1,8 @@
 from tortoise.exceptions import DoesNotExist
+from datetime import datetime, timezone
 
 from utils.logger import logger
-from db.models import TelegramUser
+from db.models import TelegramUser, Customer
 from typing import Optional
 
 async def get_telegram_user(
@@ -55,6 +56,37 @@ async def create_telegram_user(
     telegram_user = await TelegramUser.create(**data)
     return telegram_user
 
-async def update_telegram_user():
-    pass
+async def update_telegram_user_from_event(event):
+    """
+    Universal update of TelegramUser based on Stripe events.
+
+    event: Stripe webhook event object (event.data.object)
+    """
+
+    logger.info(f"[UPDATE TG USER] Updating Telegram User from event {event.type} {event.id}")
+
+    data = event.data.object
+    customer_id = data.customer
+
+    # Fetch the Customer and prefetch the related TelegramUser
+    customer = await Customer.filter(id=customer_id).prefetch_related("user_id").first()
+    if not customer or not customer.user_id:
+        logger.info(f"[UPDATE TG USER] No customer found!")
+        return
+
+    user = customer.user_id
+
+    # Always update cancel_at_period_end if the field exists
+    if hasattr(data, "cancel_at_period_end"):
+        logger.info(f"[UPDATE TG USER] Successfully updated prolongation for {user.id}!")
+        user.cancel_at_period_end = data.cancel_at_period_end
+
+    # If the event is invoice.paid, also update the subscription end date
+    if event.type == "invoice.paid":
+        if hasattr(data, "lines") and len(data.lines.data) > 0:
+            period_end = data.lines.data[0].period.end
+            logger.info(f"[UPDATE TG USER] Successfully updated prolongation and date {period_end} for {user.id}!")
+            user.date_end = datetime.fromtimestamp(period_end, tz=timezone.utc)
+
+    await user.save()
 

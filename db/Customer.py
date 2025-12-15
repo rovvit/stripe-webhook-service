@@ -33,7 +33,7 @@ async def save_customer(event):
     except Exception as e:
         logger.error(f"[ERROR] [CUSTOMER_SAVE] {e}")
 
-async def update_telegram_from_checkout_session(event):
+async def update_customer_username_from_checkout_session(event):
     body = event.get("data").get("object")
     customer_id = body.get("customer")
     custom_fields = body.get("custom_fields")

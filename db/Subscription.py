@@ -12,7 +12,8 @@ async def save_subscription(event):
       "started": datetime.fromtimestamp(body.get("current_period_start")),
       "ending": datetime.fromtimestamp(body.get("current_period_end")),
       "created": datetime.fromtimestamp(event.get("created")),
-      "url": body.get("items").get("url")
+      "url": body.get("items").get("url"),
+      "cancel_at_period_end": body.get("cancel_at_period_end")
     }
 
     data = {k: v for k, v in data.items() if v not in (None, "", [])}

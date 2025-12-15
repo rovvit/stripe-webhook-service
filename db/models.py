@@ -8,6 +8,7 @@ class TelegramUser(models.Model):
     email = fields.CharField(max_length=255, null=True, unique=True)
     subscription_status = fields.BooleanField(default=False, null=False)
     date_end = fields.DatetimeField(auto_now=False, tzinfo=timezone.utc, null=True, default=None)
+    cancel_at_period_end = fields.BooleanField(default=False)
     is_admin = fields.BooleanField(default=False)
     created_at = fields.DatetimeField(auto_now_add=True)
     class Meta:
@@ -71,6 +72,7 @@ class Subscription(StripeTable):
     )
     started = fields.DatetimeField(default=None)
     ending = fields.DatetimeField(default=None)
+    cancel_at_period_end = fields.BooleanField(default=False)
     url = fields.CharField(max_length=256, default=None)
     class Meta:
         table = "subscription"
