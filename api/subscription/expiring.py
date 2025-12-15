@@ -26,7 +26,7 @@ async def get_expiring_subscriptions(days: int = 5):
     ).all()
 
     logger.info(f"[GET EXPIRING SUBS] Found subscriptions: {users} and tg users:")
-    user_ids = [user["user_id"] for user in users]
+    user_ids = [user.user_id for user in users]
 
     return user_ids
 
