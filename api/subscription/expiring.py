@@ -5,13 +5,15 @@ from utils.logger import logger
 from .router import router
 
 @router.get("/expiring")
-async def get_expiring_subscriptions(days: int = 5, end_date: datetime = datetime.now().date()):
+async def get_expiring_subscriptions(days: int = 5, end_date: datetime = None):
+    if not end_date:
+        end_date = datetime.now(UTC).date()
     if days <= 0:
         days = 1
 
-    end = datetime(end_date.year, end_date.month, end_date.day).replace(hour=23, minute=59, second=59)
     start_date = end_date - timedelta(days=days-1)
-    start = datetime(start_date.year, start_date.month, start_date.day).replace(hour=00, minute=00, second=00)
+    start = datetime.combine(start_date, datetime.min.time(), tzinfo=UTC)
+    end = datetime.combine(end_date, datetime.max.time(), tzinfo=UTC)
 
     logger.info(f"[GET EXPIRING SUBS] Looking for subs from {start} to {end}")
     users = await TelegramUser.filter(
