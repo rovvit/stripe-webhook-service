@@ -10,7 +10,7 @@ async def get_expiring_subscriptions(days: int = 5, end_date: datetime = datetim
         days = 1
 
     end = datetime(end_date.year, end_date.month, end_date.day).replace(hour=23, minute=59, second=59)
-    start_date = end_date - timedelta(days=days)
+    start_date = end_date - timedelta(days=days-1)
     start = datetime(start_date.year, start_date.month, start_date.day).replace(hour=00, minute=00, second=00)
 
     logger.info(f"[GET EXPIRING SUBS] Looking for subs from {start} to {end}")
