@@ -13,6 +13,7 @@ async def get_expiring_subscriptions(days: int = 5, end_date: datetime = datetim
     start_date = end_date - timedelta(days=days)
     start = datetime(start_date.year, start_date.month, start_date.day).replace(hour=00, minute=00, second=00)
 
+    logger.info(f"[GET EXPIRING SUBS] Looking for subs from {start} to {end}")
     users = await TelegramUser.filter(
         date_end__gte=start,
         date_end__lte=end,
