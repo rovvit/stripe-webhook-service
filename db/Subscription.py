@@ -31,7 +31,7 @@ async def save_subscription(event):
             logger.info(f"[NEW] Created subscription {data.get('id')}")
             return
 
-        if data.get('created') > existing.updated:
+        if data.get('created_at') > existing.updated:
             await existing.update_from_dict(data).save()
             logger.info(f"[UPDATE] Updated subscription {data.get('id')}")
         else:
