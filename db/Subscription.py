@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from utils.logger import logger
 from db.models import Subscription, Customer
@@ -10,9 +10,9 @@ async def save_subscription(event):
       "id": body.get('id'),
       "status": body.get("status"),
       "customer": customer,
-      "started": datetime.fromtimestamp(body.get("current_period_start")),
-      "ending": datetime.fromtimestamp(body.get("current_period_end")),
-      "created": datetime.fromtimestamp(event.get("created")),
+      "started": datetime.fromtimestamp(body.get("current_period_start"), tz=timezone.utc),
+      "ending": datetime.fromtimestamp(body.get("current_period_end"), tz=timezone.utc),
+      "created": datetime.fromtimestamp(event.get("created"), tz=timezone.utc),
       "url": body.get("items").get("url"),
       "cancel_at_period_end": body.get("cancel_at_period_end")
     }
