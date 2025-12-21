@@ -24,8 +24,11 @@ async def save_subscription(event):
         existing = await Subscription.get_or_none(id=data.get('id'))
 
         if not existing:
+            updated = data.get('created')
+            if not updated:
+                updated = datetime.now(UTC)
             await Subscription.create(
-                updated=data.get('created'),
+                updated=updated,
                 **data
             )
             logger.info(f"[NEW] Created subscription {data.get('id')}")
