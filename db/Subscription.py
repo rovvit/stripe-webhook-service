@@ -12,7 +12,7 @@ async def save_subscription(event):
       "customer": customer,
       "started": datetime.fromtimestamp(body.get("current_period_start"), tz=timezone.utc),
       "ending": datetime.fromtimestamp(body.get("current_period_end"), tz=timezone.utc),
-      "created": datetime.fromtimestamp(event.get("created"), tz=timezone.utc),
+      "created_at": datetime.fromtimestamp(event.get("created"), tz=timezone.utc),
       "url": body.get("items").get("url"),
       "cancel_at_period_end": body.get("cancel_at_period_end")
     }
