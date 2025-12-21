@@ -17,7 +17,7 @@ class TelegramUser(models.Model):
 class StripeTable(models.Model):
     id = fields.CharField(max_length=128, pk=True)
     created_at = fields.DatetimeField(auto_now=False, default=datetime(1970, 1, 1, tzinfo=timezone.utc))
-    updated = fields.DatetimeField(auto_now=False, default=datetime(1970, 1, 1, tzinfo=timezone.utc))
+    updated = fields.DatetimeField(auto_now=True, default=datetime(1970, 1, 1, tzinfo=timezone.utc))
     class Meta:
         abstract = True
 
