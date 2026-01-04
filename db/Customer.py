@@ -50,7 +50,7 @@ async def update_customer_username_from_checkout_session(event):
     customer_id = body.get("customer")
     custom_fields = body.get("custom_fields")
     telegram_tag = None
-    logger.info(f"[INFO] Starting saving telegram tag for customer_id={customer_id}")
+    logger.info(f"[UPDATE USERNAME] Starting saving telegram username for customer_id={customer_id}")
 
     for field in custom_fields:
         key = field.get("key")
@@ -81,6 +81,7 @@ async def update_customer_username_from_checkout_session(event):
                 normalized = normalized.strip("/")
 
                 telegram_tag = normalized or None
+        logger.info(f"[UPDATE USERNAME] Normilized username is {telegram_tag}")
 
     try:
         existing = await Customer.get_or_none(id=customer_id)
@@ -102,6 +103,7 @@ async def update_customer_username_from_checkout_session(event):
                     },
                     id=customer_id,
                 )
+            logger.info(f"[UPDATE USERNAME] Successfully updated {customer_id} with {telegram_tag}")
         else:
             logger.error(f"Telegram tag not found in request body, updating customer {customer_id} skipped")
     except Exception as e:
