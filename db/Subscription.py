@@ -70,7 +70,7 @@ async def delete_subscription(event):
     sub_id = body.get('id')
     status = body.get('status')
     ended_at = datetime.fromtimestamp(body.get('ended_at'), tz=UTC)
-    subscription = get_subscriptions({"id": sub_id})
+    subscription = await get_subscriptions({"id": sub_id})
 
     if not subscription:
         logger.info(f"[DELETE SUBSCRIPTION] No subscription {sub_id} found, skipped")
