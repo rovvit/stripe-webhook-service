@@ -81,7 +81,7 @@ async def update_customer_username_from_checkout_session(event):
                 normalized = normalized.strip("/")
 
                 telegram_tag = normalized or None
-        logger.info(f"[UPDATE USERNAME] Normilized username is {telegram_tag}")
+        logger.info(f"[UPDATE USERNAME] Normalized username is {telegram_tag}")
 
     if not telegram_tag:
         logger.error(f"[UPDATE USERNAME] Telegram tag not found in request body, skipping update for {customer_id}")
@@ -89,12 +89,13 @@ async def update_customer_username_from_checkout_session(event):
 
     try:
         created_event = datetime.fromtimestamp(event.get("created"), tz=UTC)
+
         await Customer.update_or_create(
             defaults={
                 "telegram_tag": telegram_tag,
                 "updated": created_event,
             },
-            id=customer_id
+            **{"id": customer_id}
         )
         logger.info(f"[UPDATE USERNAME] Successfully updated {customer_id} with {telegram_tag}")
 
