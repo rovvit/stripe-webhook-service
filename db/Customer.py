@@ -88,6 +88,7 @@ async def update_customer_username_from_checkout_session(event):
         return
 
     try:
+        logger.info(f"customer_id={customer_id}, custom_fields={custom_fields}, telegram_tag={telegram_tag}")
         created_event = datetime.fromtimestamp(event.get("created"), tz=UTC)
         existing = await Customer.get_or_none(id=customer_id)
 
