@@ -89,14 +89,18 @@ async def update_customer_username_from_checkout_session(event):
 
     try:
         created_event = datetime.fromtimestamp(event.get("created"), tz=UTC)
+        existing = await Customer.get_or_none(id=customer_id)
 
-        await Customer.update_or_create(
-            defaults={
-                "telegram_tag": telegram_tag,
-                "updated": created_event,
-            },
-            **{"id": customer_id}
-        )
+        if existing:
+            existing.telegram_tag = telegram_tag
+            existing.updated = created_event
+            await existing.save()
+        else:
+            await Customer.create(
+                id=customer_id,
+                telegram_tag=telegram_tag,
+                updated=created_event,
+            )
         logger.info(f"[UPDATE USERNAME] Successfully updated {customer_id} with {telegram_tag}")
 
     except Exception as e:
