@@ -42,7 +42,7 @@ async def update_customer_username_from_checkout_session(event):
 
     for field in custom_fields:
         key = field.get("key")
-        if isinstance(key, str) and key.lower() == "telegramusername":
+        if isinstance(key, str) and (key.lower() == "telegramusername" or key.lower() == "telegram"):
             text = field.get("text", {})
             tag = text.get("value")
 
