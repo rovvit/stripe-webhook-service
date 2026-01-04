@@ -78,7 +78,7 @@ async def update_telegram_user_from_event(event):
 
     # Always update cancel_at_period_end if the field exists
     if hasattr(data, "cancel_at_period_end"):
-        logger.info(f"[UPDATE TG USER] Successfully updated prolongation for {user.id}!")
+        logger.info(f"[UPDATE TG USER] Successfully updated cancel_at_period_end for {user.id}!")
         user.cancel_at_period_end = data.cancel_at_period_end
 
     # If the event is invoice.paid, also update the subscription end date
@@ -91,6 +91,7 @@ async def update_telegram_user_from_event(event):
     # If the event is subscription.deleted updating end date
     elif event.type == "customer.subscription.deleted":
         user.date_end = datetime.fromtimestamp(data.ended_at, tz=timezone.utc)
+        logger.info(f"[UPDATE TG USER] Successfully updated ended_at for deletion")
 
     await user.save()
 
