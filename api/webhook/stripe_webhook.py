@@ -71,6 +71,10 @@ async def webhook_handler(request: Request):
         is_processed = True
         await update_customer_username_from_checkout_session(event)
 
+    elif event.type == "customer.subscription.deleted":
+        #TODO
+        pass
+
     if not is_processed:
         logger.info(f"[INFO] Unsupported event type {event.type}, ignored.")
 

@@ -1,7 +1,11 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 from utils.logger import logger
 from db.models import Customer
 from tortoise.expressions import Q
+from tortoise.exceptions import IntegrityError
+
+from utils.make_aware import make_aware
+
 
 async def save_customer(event):
     customer = event.get("data").get("object")
@@ -10,28 +14,36 @@ async def save_customer(event):
     logger.info(f"[INFO] Starting saving charge {customer_id}")
 
     try:
-        existing = await Customer.get_or_none(id=customer_id)
+        await Customer.create(
+            id=customer_id,
+            name=customer.get("name"),
+            email=customer.get("email"),
+            phone=customer.get("phone"),
+            description=customer.get("description"),
+            created_at=datetime.fromtimestamp(customer.get("created"), tz=UTC),
+            updated=created_event,
+        )
+        logger.info(f"[NEW] Created Customer {customer_id}")
 
-        if (not existing) or (created_event > datetime.timestamp(existing.updated)):
-            await Customer.update_or_create(
-                id=customer_id,
-                name=customer.get("name"),
-                email=customer.get("email"),
-                phone=customer.get("phone"),
-                description=customer.get("description"),
-                created_at=datetime.fromtimestamp(customer.get("created")),
-                updated=datetime.fromtimestamp(created_event),
-            )
-            if not existing:
-                logger.info(f"[NEW] Created Customer {customer_id}")
-            else:
-                logger.info(f"[UPDATE] Updated Charge {customer_id} (newer timestamp)")
+    except IntegrityError:
+        existing = await Customer.get(id=customer_id)
+        existing_updated = make_aware(existing.updated)
+
+        if created_event > existing_updated:
+            await existing.update_from_dict({
+                "name": customer.get("name"),
+                "email": customer.get("email"),
+                "phone": customer.get("phone"),
+                "description": customer.get("description"),
+                "updated": created_event,
+            }).save()
+            logger.info(f"[UPDATE] Updated Charge {customer_id} (newer timestamp)")
             return
-
         else:
             logger.info(f"[SKIP] Ignored outdated event for {customer_id}")
     except Exception as e:
         logger.error(f"[ERROR] [CUSTOMER_SAVE] {e}")
+
 
 async def update_customer_username_from_checkout_session(event):
     body = event.get("data").get("object")
@@ -94,6 +106,7 @@ async def update_customer_username_from_checkout_session(event):
             logger.error(f"Telegram tag not found in request body, updating customer {customer_id} skipped")
     except Exception as e:
         logger.error(f"[ERROR] [CUSTOMER_UPDATE_TG] {e}")
+
 
 async def get_customers(*, email=None, name=None, phone=None, username=None):
     fields = {k: v for k, v in locals().items() if v is not None}
