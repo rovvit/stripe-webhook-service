@@ -1,5 +1,6 @@
 from datetime import datetime, timezone, UTC
 
+from db.TelegramUser import update_telegram_user_from_event
 from utils.logger import logger
 from utils.make_aware import make_aware
 from db.models import Subscription, Customer
@@ -63,3 +64,23 @@ async def get_subscriptions(filters: dict):
         return []
 
     return subscriptions
+
+async def delete_subscription(event):
+    body = event.get('data').get('object')
+    sub_id = body.get('id')
+    status = body.get('status')
+    ended_at = datetime.fromtimestamp(body.get('ended_at'), tz=UTC)
+    subscription = get_subscriptions({"id": sub_id})
+
+    if not subscription:
+        logger.info(f"[DELETE SUBSCRIPTION] No subscription {sub_id} found, skipped")
+
+    subscription.status = status
+    subscription.ending = ended_at
+    try:
+        await subscription.save()
+        logger.info(f"[DELETE SUBSCRIPTION] Updated subscription {sub_id}")
+    except Exception as e:
+        logger.error(f"[DELETE SUBSCRIPTION] {e}")
+
+    await update_telegram_user_from_event(event)

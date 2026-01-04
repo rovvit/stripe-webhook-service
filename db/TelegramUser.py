@@ -88,5 +88,9 @@ async def update_telegram_user_from_event(event):
             logger.info(f"[UPDATE TG USER] Successfully updated prolongation and date {period_end} for {user.id}!")
             user.date_end = datetime.fromtimestamp(period_end, tz=timezone.utc)
 
+    # If the event is subscription.deleted updating end date
+    elif event.tpye == "customer.subscription.deleted":
+        user.date_end = data.ended_at
+
     await user.save()
 

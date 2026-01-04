@@ -7,7 +7,7 @@ from fastapi import APIRouter, Request, status
 from db.PaymentIntent import save_payment_intent
 from db.Charge import save_charge
 from db.Customer import save_customer, update_customer_username_from_checkout_session
-from db.Subscription import save_subscription
+from db.Subscription import save_subscription, delete_subscription
 from db.TelegramUser import update_telegram_user_from_event
 from starlette.responses import JSONResponse
 from utils.logger import logger
@@ -62,6 +62,9 @@ async def webhook_handler(request: Request):
             if event.type == "customer.subscription.updated":
                 await update_telegram_user_from_event(event)
 
+        elif event.type == "customer.subscription.deleted":
+            await delete_subscription(event)
+
     elif "invoice" in event.type:
         if event.type == "invoice.paid":
             await update_telegram_user_from_event(event)
@@ -71,9 +74,6 @@ async def webhook_handler(request: Request):
         is_processed = True
         await update_customer_username_from_checkout_session(event)
 
-    elif event.type == "customer.subscription.deleted":
-        #TODO
-        pass
 
     if not is_processed:
         logger.info(f"[INFO] Unsupported event type {event.type}, ignored.")
