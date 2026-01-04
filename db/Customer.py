@@ -88,7 +88,7 @@ async def update_customer_username_from_checkout_session(event):
         return
 
     try:
-        created_event = make_aware(event.get("created"))
+        created_event = datetime.fromtimestamp(event.get("created"), tz=UTC)
         await Customer.update_or_create(
             defaults={
                 "telegram_tag": telegram_tag,
