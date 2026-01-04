@@ -90,7 +90,7 @@ async def update_telegram_user_from_event(event):
 
     # If the event is subscription.deleted updating end date
     elif event.type == "customer.subscription.deleted":
-        user.date_end = data.ended_at
+        user.date_end = datetime.fromtimestamp(data.ended_at, tz=timezone.utc)
 
     await user.save()
 
