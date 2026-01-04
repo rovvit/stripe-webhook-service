@@ -83,31 +83,23 @@ async def update_customer_username_from_checkout_session(event):
                 telegram_tag = normalized or None
         logger.info(f"[UPDATE USERNAME] Normilized username is {telegram_tag}")
 
+    if not telegram_tag:
+        logger.error(f"[UPDATE USERNAME] Telegram tag not found in request body, skipping update for {customer_id}")
+        return
+
     try:
-        existing = await Customer.get_or_none(id=customer_id)
-        if telegram_tag:
-            if not existing:
-                await Customer.update_or_create(
-                    defaults={
-                        "telegram_tag": telegram_tag,
-                        "updated": datetime.fromtimestamp(event.get("created")),
-                    },
-                    id=customer_id,
-                )
-            else:
-                await existing.update_or_create(
-                    defaults={
-                        "telegram_tag": telegram_tag,
-                        "created_at": datetime(1970, 1, 1, tzinfo=timezone.utc),
-                        "updated": datetime.fromtimestamp(event.get("created")),
-                    },
-                    id=customer_id,
-                )
-            logger.info(f"[UPDATE USERNAME] Successfully updated {customer_id} with {telegram_tag}")
-        else:
-            logger.error(f"Telegram tag not found in request body, updating customer {customer_id} skipped")
+        created_event = make_aware(event.get("created"))
+        await Customer.update_or_create(
+            defaults={
+                "telegram_tag": telegram_tag,
+                "updated": created_event,
+            },
+            id=customer_id
+        )
+        logger.info(f"[UPDATE USERNAME] Successfully updated {customer_id} with {telegram_tag}")
+
     except Exception as e:
-        logger.error(f"[ERROR] [CUSTOMER_UPDATE_TG] {e}")
+        logger.error(f"[ERROR] [UPDATE USERNAME] {e}")
 
 
 async def get_customers(*, email=None, name=None, phone=None, username=None):
