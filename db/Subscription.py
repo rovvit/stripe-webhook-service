@@ -1,7 +1,9 @@
 from datetime import datetime, timezone, UTC
 
 from utils.logger import logger
+from utils.make_aware import make_aware
 from db.models import Subscription, Customer
+
 
 async def save_subscription(event):
     body =event.get('data').get('object')
@@ -10,9 +12,9 @@ async def save_subscription(event):
       "id": body.get('id'),
       "status": body.get("status"),
       "customer": customer,
-      "started": datetime.fromtimestamp(body.get("current_period_start"), tz=timezone.utc),
-      "ending": datetime.fromtimestamp(body.get("current_period_end"), tz=timezone.utc),
-      "created_at": datetime.fromtimestamp(event.get("created"), tz=timezone.utc),
+      "started": datetime.fromtimestamp(body.get("current_period_start"), tz=UTC),
+      "ending": datetime.fromtimestamp(body.get("current_period_end"), tz=UTC),
+      "created_at": datetime.fromtimestamp(event.get("created"), tz=UTC),
       "url": body.get("items").get("url"),
       "cancel_at_period_end": body.get("cancel_at_period_end")
     }
@@ -24,9 +26,7 @@ async def save_subscription(event):
         existing = await Subscription.get_or_none(id=data.get('id'))
 
         if not existing:
-            updated = data.get('created')
-            if not updated:
-                updated = datetime.now(UTC)
+            updated = data.get('created_at') or datetime.now(UTC)
             await Subscription.create(
                 updated=updated,
                 **data
@@ -34,19 +34,20 @@ async def save_subscription(event):
             logger.info(f"[NEW] Created subscription {data.get('id')}")
             return
 
-        # if data.get('created_at') > existing.updated:
-        #     await existing.update_from_dict(data).save()
-        #     logger.info(f"[UPDATE] Updated subscription {data.get('id')}")
-        # else:
-        partial_update = {
-            k: v for k, v in data.items()
-            if getattr(existing, k) in (None, "", [])
-        }
-        if partial_update:
-            await existing.update_from_dict(partial_update).save()
-            logger.info(f"[UPDATE] Partially updated subscription {data.get('id')}")
+        existing_updated = make_aware(existing.updated)
+        if data.get('created_at') and data.get('created_at') > existing_updated:
+            await existing.update_from_dict(data).save()
+            logger.info(f"[UPDATE] Updated subscription {data.get('id')}")
         else:
-            logger.info(f"[SKIP] No new data for subscription {data.get('id')}, skipped")
+            partial_update = {
+                k: v for k, v in data.items()
+                if getattr(existing, k) in (None, "", [])
+            }
+            if partial_update:
+                await existing.update_from_dict(partial_update).save()
+                logger.info(f"[UPDATE] Partially updated subscription {data.get('id')}")
+            else:
+                logger.info(f"[SKIP] No new data for subscription {data.get('id')}, skipped")
 
     except Exception as e:
         logger.error(f"[ERROR] [SUBSCRIPTION] {e}")
