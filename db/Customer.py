@@ -10,7 +10,7 @@ from utils.make_aware import make_aware
 async def save_customer(event):
     customer = event.get("data").get("object")
     customer_id = customer.get("id")
-    created_event = event.get("created")
+    created_event = datetime.fromtimestamp(event.get("created"), tz=UTC)
     logger.info(f"[INFO] Starting saving charge {customer_id}")
 
     try:
