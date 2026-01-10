@@ -1,11 +1,12 @@
 from datetime import date, datetime, timedelta, UTC
 
+from fastapi import Query
 from db.models import TelegramUser
 from utils.logger import logger
 from .router import router
 
 @router.get("/expiring")
-async def get_expiring_subscriptions(days: int = 5, end_date: date | None = None ):
+async def get_expiring_subscriptions(days: int = 5, end_date: date = Query(None, description="Format: YYYY-MM-DD") ):
     if not end_date:
         end_date = datetime.now(UTC).date()
     if days <= 0:
