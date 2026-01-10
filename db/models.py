@@ -5,6 +5,7 @@ class TelegramUser(models.Model):
     id = fields.IntField(pk=True)
     user_id = fields.BigIntField(unique=True)
     username = fields.CharField(max_length=256, unique=True, null=True)
+    full_name = fields.CharField(max_length=256, null=True)
     email = fields.CharField(max_length=255, null=True, unique=True)
     subscription_status = fields.BooleanField(default=False, null=False)
     date_end = fields.DatetimeField(auto_now=False, tzinfo=timezone.utc, null=True, default=None)

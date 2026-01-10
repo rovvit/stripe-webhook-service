@@ -13,6 +13,7 @@ class SubscriptionCheckRequest(BaseModel):
     email: Optional[str] = None
     username: Optional[str] = None
     user_id: Optional[int] = None
+    name: Optional[str] = None
 
 @router.post("/check")
 async def check_subscription(payload: SubscriptionCheckRequest):
@@ -20,7 +21,8 @@ async def check_subscription(payload: SubscriptionCheckRequest):
         data = {k: v for k, v in {
             "email": payload.email,
             "username": payload.username,
-            "user_id": payload.user_id
+            "user_id": payload.user_id,
+            "full_name": payload.name
         }.items() if v is not None}
         logger.info(f"filters: {data}, types: {[type(v) for v in data.values()]}")
 
