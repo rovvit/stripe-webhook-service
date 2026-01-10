@@ -18,30 +18,36 @@ class SubscriptionCheckRequest(BaseModel):
 @router.post("/check")
 async def check_subscription(payload: SubscriptionCheckRequest):
     try:
-        data = {k: v for k, v in {
+        filters = {k: v for k, v in {
+            "email": payload.email,
+            "username": payload.username,
+            "user_id": payload.user_id,
+        }.items() if v is not None}
+
+        creation_data = {k: v for k, v in {
             "email": payload.email,
             "username": payload.username,
             "user_id": payload.user_id,
             "full_name": payload.name
         }.items() if v is not None}
-        logger.info(f"filters: {data}, types: {[type(v) for v in data.values()]}")
+        logger.info(f"filters: {filters}, types: {[type(v) for v in filters.values()]}")
 
-        if not data:
+        if not filters:
             return JSONResponse({"error": "Bad filters passed"}, status_code=400)
 
-        logger.info(f"[CHECK SUBSCRIPTION] New request with data {data.items()}...")
+        logger.info(f"[CHECK SUBSCRIPTION] New request with data {filters.items()}...")
 
-        telegram_user = await get_telegram_user(**data)
+        telegram_user = await get_telegram_user(**filters)
         if telegram_user:
             logger.info(f"[CHECK SUBSCRIPTION] Found Telegram User! {telegram_user.user_id}")
         else:
-            telegram_user = await create_telegram_user(**data)
+            telegram_user = await create_telegram_user(**creation_data)
 
         logger.info(f"[CHECK SUBSCRIPTION] Telegram User not found, searching for customer...")
-        customers = await get_customers(email=data.get('email'), username=data.get('username'))
+        customers = await get_customers(email=filters.get('email'), username=filters.get('username'))
 
         if not customers:
-            logger.info(f"[CHECK SUBSCRIPTION] No customer found {data.keys()} {data.values()}")
+            logger.info(f"[CHECK SUBSCRIPTION] No customer found {filters.keys()} {filters.values()}")
             return JSONResponse({"message": "No customer found", "subscription_status": False}, status_code=200)
 
         for cus in customers:
