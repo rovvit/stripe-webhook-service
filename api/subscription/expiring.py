@@ -6,13 +6,13 @@ from utils.logger import logger
 from .router import router
 
 @router.get("/expiring")
-async def get_expiring_subscriptions(days: int = 5, end_date: date = Query(None, description="Format: YYYY-MM-DD") ):
-    if not end_date:
-        end_date = datetime.now(UTC).date()
+async def get_expiring_subscriptions(days: int = 5, start_date: date = Query(None, description="Format: YYYY-MM-DD") ):
+    if not start_date:
+        start_date = datetime.now(UTC).date()
     if days <= 0:
         days = 1
 
-    start_date = end_date - timedelta(days=days-1)
+    end_date = start_date - timedelta(days=days-1)
     start = datetime.combine(start_date, datetime.min.time(), tzinfo=UTC)
     end = datetime.combine(end_date, datetime.max.time(), tzinfo=UTC)
 
