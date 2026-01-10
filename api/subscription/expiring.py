@@ -12,7 +12,7 @@ async def get_expiring_subscriptions(days: int = 5, start_date: date = Query(Non
     if days <= 0:
         days = 1
 
-    end_date = start_date - timedelta(days=days-1)
+    end_date = start_date + timedelta(days=days-1)
     start = datetime.combine(start_date, datetime.min.time(), tzinfo=UTC)
     end = datetime.combine(end_date, datetime.max.time(), tzinfo=UTC)
 
