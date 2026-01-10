@@ -50,7 +50,8 @@ async def create_telegram_user(
         user_id: int = None,
         username: Optional[str] = None,
         email: Optional[str] = None,
-        subscription_status: Optional[bool] = False
+        subscription_status: Optional[bool] = False,
+        full_name: Optional[str] = None
 ):
     data = {k: v for k, v in locals().items() if v is not None}
     telegram_user = await TelegramUser.create(**data)
