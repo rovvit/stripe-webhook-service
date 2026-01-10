@@ -81,6 +81,12 @@ async def update_telegram_user_from_event(event):
         logger.info(f"[UPDATE TG USER] Successfully updated cancel_at_period_end for {user.id}!")
         user.cancel_at_period_end = data.cancel_at_period_end
 
+    if event.type == "customer.subscription.updated":
+        if hasattr(data, "current_period_end"):
+            period_end = datetime.fromtimestamp(data.current_period_end, tz=timezone.utc)
+            logger.info(f"[UPDATE TG USER] Successfully updated period end date {period_end} for {user.id}")
+            user.date_end = period_end
+
     # If the event is invoice.paid, also update the subscription end date
     if event.type == "invoice.paid":
         if hasattr(data, "lines") and len(data.lines.data) > 0:
