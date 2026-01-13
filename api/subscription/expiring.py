@@ -29,7 +29,7 @@ async def get_expiring_subscriptions(days: int = 5, start_date: date = Query(Non
         {
             "user_id": user.user_id,
             "date_end": user.date_end,
-            "fullname": user.full_name,
+            "full_name": user.full_name,
             "username": user.username
         }
         for user in users]
